@@ -41,9 +41,11 @@ export const TALENT_TYPE_NAMES: Record<string, string> = {
   normal_attack: 'การโจมตีปกติ',
   elemental_skill: 'สกิลธาตุ',
   elemental_burst: 'ท่าไม้ตายธาตุ',
+  alternate_sprint: 'วิ่งทางเลือก',
   passive_1: 'พรสวรรค์ที่ 1',
   passive_2: 'พรสวรรค์ที่ 2',
   passive_3: 'พรสวรรค์ที่ 3',
+  passive_4: 'พรสวรรค์ที่ 4',
 };
 
 /** Stat name translations */

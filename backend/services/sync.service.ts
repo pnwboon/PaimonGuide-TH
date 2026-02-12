@@ -79,8 +79,59 @@ function normalizeObtainMethod(location: string | undefined | null): string | nu
 export class SyncService {
   private supabase = getAdminClient();
 
+  // Map API talent type strings to our DB enum
+  private normalizeTalentType(apiType: string): string {
+    const map: Record<string, string> = {
+      NORMAL_ATTACK: 'normal_attack',
+      ELEMENTAL_SKILL: 'elemental_skill',
+      ELEMENTAL_BURST: 'elemental_burst',
+    };
+    return map[apiType] || 'alternate_sprint';
+  }
+
+  // Parse base stats from ascension_data (last phase max stats)
+  private parseBaseStats(ascensionData: Array<Record<string, string>> | undefined): {
+    base_hp: number;
+    base_atk: number;
+    base_def: number;
+    ascension_stat: string | null;
+    ascension_stat_value: number | null;
+  } {
+    if (!ascensionData || ascensionData.length === 0) {
+      return { base_hp: 0, base_atk: 0, base_def: 0, ascension_stat: null, ascension_stat_value: null };
+    }
+
+    // Last phase (max stats)
+    const lastPhase = ascensionData[ascensionData.length - 1];
+    const parseNum = (v: string | undefined) => {
+      if (!v) return 0;
+      return Math.round(parseFloat(v.replace(/,/g, '')) || 0);
+    };
+
+    // Find ascension stat (the stat key that isn't AscensionPhase/Level/BaseHP/BaseAtk/BaseDef)
+    const knownKeys = ['AscensionPhase', 'Level', 'BaseHP', 'BaseAtk', 'BaseDef'];
+    let ascStat: string | null = null;
+    let ascValue: number | null = null;
+    for (const key of Object.keys(lastPhase)) {
+      if (!knownKeys.includes(key)) {
+        ascStat = key;
+        const rawVal = lastPhase[key];
+        ascValue = rawVal ? parseFloat(rawVal.replace('%', '')) : null;
+        break;
+      }
+    }
+
+    return {
+      base_hp: parseNum(lastPhase.BaseHP),
+      base_atk: parseNum(lastPhase.BaseAtk),
+      base_def: parseNum(lastPhase.BaseDef),
+      ascension_stat: ascStat,
+      ascension_stat_value: ascValue,
+    };
+  }
+
   /**
-   * Sync all characters from Genshin.dev API
+   * Sync all characters from Genshin.dev API (with talents, constellations, ascension data)
    */
   async syncCharacters(): Promise<{ synced: number; errors: string[] }> {
     const errors: string[] = [];
@@ -102,7 +153,11 @@ export class SyncService {
           const data = await res.json();
           const slug = slugify(name);
 
-          const characterData = {
+          // Parse ascension data for base stats
+          const ascensionData = data.ascension_materials?.ascension_data;
+          const stats = this.parseBaseStats(ascensionData);
+
+          const characterData: Record<string, unknown> = {
             slug,
             name_en: data.name || name,
             name_th: data.name || name, // Will need manual Thai translation
@@ -110,27 +165,132 @@ export class SyncService {
             element: normalizeElement(data.vision || ''),
             weapon_type: normalizeWeaponType(data.weapon || ''),
             region: data.nation || null,
-            base_hp: 0, // API doesn't provide base stats directly
-            base_atk: 0,
-            base_def: 0,
+            base_hp: stats.base_hp,
+            base_atk: stats.base_atk,
+            base_def: stats.base_def,
+            ascension_stat: stats.ascension_stat,
+            ascension_stat_value: stats.ascension_stat_value,
             description: data.description || null,
+            title: data.title || null,
+            gender: data.gender || null,
+            birthday: data.birthday || null,
+            affiliation: data.affiliation || null,
+            constellation_name: data.constellation || null,
             icon_url: `${GENSHIN_API_BASE}/characters/${name}/icon`,
             card_url: `${GENSHIN_API_BASE}/characters/${name}/card`,
             avatar_url: `${GENSHIN_API_BASE}/characters/${name}/portrait`,
           };
 
-          const { error } = await this.supabase
-            .from('characters')
-            .upsert(characterData, { onConflict: 'slug' });
-
-          if (error) {
-            errors.push(`DB error for ${name}: ${error.message}`);
-          } else {
-            synced++;
+          // Store ascension data & materials as JSONB
+          if (ascensionData) {
+            characterData.ascension_data = ascensionData;
+          }
+          // Collect all ascension material levels (level_20, level_40, etc.)
+          if (data.ascension_materials) {
+            const materialsOnly: Record<string, unknown> = {};
+            for (const [key, val] of Object.entries(data.ascension_materials)) {
+              if (key !== 'ascension_data') {
+                materialsOnly[key] = val;
+              }
+            }
+            if (Object.keys(materialsOnly).length > 0) {
+              characterData.ascension_materials_data = materialsOnly;
+            }
           }
 
+          // Upsert character
+          const { data: upsertedChar, error } = await this.supabase
+            .from('characters')
+            .upsert(characterData, { onConflict: 'slug' })
+            .select('id')
+            .single();
+
+          if (error || !upsertedChar) {
+            errors.push(`DB error for ${name}: ${error?.message || 'no data returned'}`);
+            continue;
+          }
+
+          const characterId = upsertedChar.id;
+
+          // ========== Sync Talents ==========
+          // Delete existing talents for this character (clean sync)
+          await this.supabase.from('talents').delete().eq('character_id', characterId);
+
+          // Skill talents (normal attack, elemental skill, elemental burst)
+          if (data.skillTalents && Array.isArray(data.skillTalents)) {
+            for (const talent of data.skillTalents) {
+              const talentData = {
+                character_id: characterId,
+                type: this.normalizeTalentType(talent.type || ''),
+                name_en: talent.name || '',
+                name_th: talent.name || '', // Will need manual Thai translation
+                description_en: talent.description || null,
+                description_th: null,
+                scaling: talent.upgrades || null,
+              };
+
+              const { error: talentError } = await this.supabase
+                .from('talents')
+                .insert(talentData);
+
+              if (talentError) {
+                errors.push(`Talent error for ${name}/${talent.name}: ${talentError.message}`);
+              }
+            }
+          }
+
+          // Passive talents
+          if (data.passiveTalents && Array.isArray(data.passiveTalents)) {
+            for (let i = 0; i < data.passiveTalents.length; i++) {
+              const passive = data.passiveTalents[i];
+              const passiveType = `passive_${i + 1}`;
+
+              const passiveData = {
+                character_id: characterId,
+                type: passiveType,
+                name_en: passive.name || '',
+                name_th: passive.name || '',
+                description_en: passive.description || null,
+                description_th: null,
+                scaling: null,
+              };
+
+              const { error: passiveError } = await this.supabase
+                .from('talents')
+                .insert(passiveData);
+
+              if (passiveError) {
+                errors.push(`Passive error for ${name}/${passive.name}: ${passiveError.message}`);
+              }
+            }
+          }
+
+          // ========== Sync Constellations ==========
+          if (data.constellations && Array.isArray(data.constellations)) {
+            for (const constellation of data.constellations) {
+              const constData = {
+                character_id: characterId,
+                level: constellation.level || 1,
+                name_en: constellation.name || '',
+                name_th: constellation.name || '',
+                description_en: constellation.description || null,
+                description_th: null,
+              };
+
+              const { error: constError } = await this.supabase
+                .from('constellations')
+                .upsert(constData, { onConflict: 'character_id,level' });
+
+              if (constError) {
+                errors.push(`Constellation error for ${name}/${constellation.name}: ${constError.message}`);
+              }
+            }
+          }
+
+          synced++;
+
           // Rate limiting
-          await new Promise((resolve) => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 300));
         } catch (err) {
           errors.push(`Error processing ${name}: ${String(err)}`);
         }

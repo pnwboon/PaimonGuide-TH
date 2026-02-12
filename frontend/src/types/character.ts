@@ -10,9 +10,11 @@ export type TalentType =
   | 'normal_attack'
   | 'elemental_skill'
   | 'elemental_burst'
+  | 'alternate_sprint'
   | 'passive_1'
   | 'passive_2'
-  | 'passive_3';
+  | 'passive_3'
+  | 'passive_4';
 
 export interface Character {
   id: string;
@@ -24,11 +26,22 @@ export interface Character {
   weapon_type: WeaponType;
   region?: string;
 
+  // Extra info
+  title?: string;
+  gender?: string;
+  birthday?: string;
+  affiliation?: string;
+  constellation_name?: string;
+
   base_hp: number;
   base_atk: number;
   base_def: number;
   ascension_stat?: string;
   ascension_stat_value?: number;
+
+  // Ascension data (JSONB)
+  ascension_data?: AscensionPhaseData[];
+  ascension_materials_data?: Record<string, AscensionMaterialEntry[]>;
 
   icon_url?: string;
   card_url?: string;
@@ -41,6 +54,25 @@ export interface Character {
   updated_at: string;
 }
 
+export interface AscensionPhaseData {
+  AscensionPhase: string;
+  Level: string;
+  BaseHP: string;
+  BaseAtk: string;
+  BaseDef: string;
+  [statKey: string]: string; // e.g. "CRIT DMG": "38.4%"
+}
+
+export interface AscensionMaterialEntry {
+  name: string;
+  value: number;
+}
+
+export interface TalentUpgrade {
+  name: string;
+  value: string;
+}
+
 export interface Talent {
   id: string;
   character_id: string;
@@ -49,7 +81,7 @@ export interface Talent {
   name_th: string;
   description_en?: string;
   description_th?: string;
-  scaling?: Record<string, unknown>;
+  scaling?: TalentUpgrade[] | null;
 }
 
 export interface Constellation {

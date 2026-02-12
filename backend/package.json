@@ -9,11 +9,12 @@
     "migrate": "echo 'Run migrations via Supabase Dashboard or CLI: supabase db push'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.95.3"
+    "@supabase/supabase-js": "^2.95.3",
+    "dotenv": "^17.2.4"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.0.0"
   }
 }

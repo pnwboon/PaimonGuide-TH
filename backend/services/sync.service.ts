@@ -55,6 +55,27 @@ function normalizeWeaponType(weapon: string): string {
   return map[weapon.toLowerCase()] || weapon;
 }
 
+function normalizeObtainMethod(location: string | undefined | null): string | null {
+  if (!location) return null;
+  const map: Record<string, string> = {
+    gacha: 'Gacha',
+    wish: 'Gacha',
+    wishes: 'Gacha',
+    craftable: 'Craftable',
+    crafting: 'Craftable',
+    forge: 'Craftable',
+    'battle pass': 'Battle Pass',
+    'bp bounty': 'Battle Pass',
+    event: 'Event',
+    starglitter: 'Starglitter',
+    'starglitter exchange': 'Starglitter',
+    fishing: 'Fishing',
+    quest: 'Quest',
+    free: 'Free',
+  };
+  return map[location.toLowerCase()] || null;
+}
+
 export class SyncService {
   private supabase = getAdminClient();
 
@@ -143,7 +164,8 @@ export class SyncService {
           const data = await res.json();
           const slug = slugify(name);
 
-          const weaponData = {
+          const obtainMethod = normalizeObtainMethod(data.location);
+          const weaponData: Record<string, unknown> = {
             slug,
             name_en: data.name || name,
             name_th: data.name || name,
@@ -154,8 +176,12 @@ export class SyncService {
             passive_name_en: data.passiveName || null,
             passive_description_en: data.passiveDesc || null,
             icon_url: `${GENSHIN_API_BASE}/weapons/${name}/icon`,
-            obtain_method: data.location || null,
           };
+
+          // Only include obtain_method if it maps to a valid enum value
+          if (obtainMethod) {
+            weaponData.obtain_method = obtainMethod;
+          }
 
           const { error } = await this.supabase
             .from('weapons')

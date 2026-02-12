@@ -14,7 +14,7 @@ import { ArtifactCard } from '@/components/artifacts/artifact-card';
 import type { Artifact } from '@/types';
 
 async function fetchArtifacts(): Promise<Artifact[]> {
-  const res = await fetch('/api/artifacts');
+  const res = await fetch('/api/artifacts?pageSize=500');
   if (!res.ok) throw new Error('Failed to fetch artifacts');
   const json = await res.json();
   return json.data || [];

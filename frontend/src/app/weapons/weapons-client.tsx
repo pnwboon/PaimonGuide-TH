@@ -17,7 +17,7 @@ import { RARITIES } from '@/config/constants';
 import type { Weapon } from '@/types';
 
 async function fetchWeapons(): Promise<Weapon[]> {
-  const res = await fetch('/api/weapons');
+  const res = await fetch('/api/weapons?pageSize=500');
   if (!res.ok) throw new Error('Failed to fetch weapons');
   const json = await res.json();
   return json.data || [];

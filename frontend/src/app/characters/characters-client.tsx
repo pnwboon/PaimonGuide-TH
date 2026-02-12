@@ -15,7 +15,7 @@ import { CharacterFilter } from '@/components/characters/character-filter';
 import type { Character } from '@/types';
 
 async function fetchCharacters(): Promise<Character[]> {
-  const res = await fetch('/api/characters');
+  const res = await fetch('/api/characters?pageSize=500');
   if (!res.ok) throw new Error('Failed to fetch characters');
   const json = await res.json();
   return json.data || [];

@@ -4,6 +4,7 @@
 // รัน: npx tsx backend/scripts/seed-data.ts
 // ต้องตั้งค่า environment variables ก่อนรัน
 
+import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

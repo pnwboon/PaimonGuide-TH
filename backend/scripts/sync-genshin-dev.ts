@@ -4,6 +4,7 @@
 // รัน: npx tsx backend/scripts/sync-genshin-dev.ts
 // ต้องตั้งค่า environment variables ก่อนรัน
 
+import 'dotenv/config';
 import { SyncService } from '../services/sync.service';
 
 async function main() {

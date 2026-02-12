@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 100);
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 500);
 
     let query = supabase
       .from('artifacts')

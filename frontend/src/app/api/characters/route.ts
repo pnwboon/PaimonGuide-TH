@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const rarity = searchParams.get('rarity');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 100);
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 500);
     const sortBy = searchParams.get('sortBy') || 'name_en';
     const sortOrder = searchParams.get('sortOrder') === 'desc' ? false : true;
 

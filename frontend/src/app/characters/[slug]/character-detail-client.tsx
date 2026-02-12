@@ -71,6 +71,7 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
                 height={200}
                 className="rounded-xl"
                 priority
+                unoptimized
               />
             ) : (
               <div className="w-48 h-48 bg-gray-700/50 rounded-xl flex items-center justify-center">
@@ -104,6 +105,12 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
               )}
               {character.constellation_name && (
                 <StatBadge label="กลุ่มดาว" value={character.constellation_name} />
+              )}
+              {character.birthday && (
+                <StatBadge label="วันเกิด" value={character.birthday} />
+              )}
+              {character.release_date && (
+                <StatBadge label="วันเปิดตัว" value={character.release_date} />
               )}
             </div>
 
@@ -285,11 +292,21 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
                     <h3 className="text-sm font-bold text-amber-400 mb-3">
                       {level.replace('level_', 'Lv. ')}
                     </h3>
-                    <div className="space-y-1.5">
-                      {materials.map((mat, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-300">{mat.name}</span>
-                          <span className="text-white font-medium">x{mat.value.toLocaleString()}</span>
+                    <div className="space-y-2">
+                      {materials.map((mat: { name: string; value: number; image_url?: string }, i: number) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          {mat.image_url && (
+                            <Image
+                              src={mat.image_url}
+                              alt={mat.name}
+                              width={28}
+                              height={28}
+                              className="rounded bg-gray-700/50 p-0.5 flex-shrink-0"
+                              unoptimized
+                            />
+                          )}
+                          <span className="text-gray-300 flex-1 truncate">{mat.name}</span>
+                          <span className="text-white font-medium flex-shrink-0">x{mat.value.toLocaleString()}</span>
                         </div>
                       ))}
                     </div>

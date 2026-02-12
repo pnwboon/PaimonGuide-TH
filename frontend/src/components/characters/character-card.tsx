@@ -43,6 +43,7 @@ export function CharacterCard({ character, className }: CharacterCardProps) {
               height={128}
               className="object-contain group-hover:scale-110 transition-transform duration-300"
               loading="lazy"
+              unoptimized
             />
           ) : (
             <div className="w-24 h-24 rounded-full bg-gray-700/50 flex items-center justify-center">

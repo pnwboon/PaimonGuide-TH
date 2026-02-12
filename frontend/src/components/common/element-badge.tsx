@@ -2,7 +2,10 @@
 // PaimonGuide TH - Element Badge Component
 // =============================================
 
+import Image from 'next/image';
 import { cn, getElementBgClass, getElementNameTh } from '@/lib/utils';
+
+const GENSHIN_API = 'https://genshin.jmp.blue';
 
 interface ElementBadgeProps {
   element: string;
@@ -17,6 +20,9 @@ export function ElementBadge({ element, showLabel = true, size = 'md', className
     md: 'px-2.5 py-1 text-xs',
   };
 
+  const iconSize = size === 'sm' ? 14 : 18;
+  const elementIconUrl = `${GENSHIN_API}/elements/${element.toLowerCase()}/icon`;
+
   return (
     <span
       className={cn(
@@ -26,6 +32,14 @@ export function ElementBadge({ element, showLabel = true, size = 'md', className
         className
       )}
     >
+      <Image
+        src={elementIconUrl}
+        alt={element}
+        width={iconSize}
+        height={iconSize}
+        className="object-contain"
+        unoptimized
+      />
       {showLabel && getElementNameTh(element)}
     </span>
   );

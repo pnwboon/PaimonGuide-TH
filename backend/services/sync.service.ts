@@ -78,6 +78,7 @@ function normalizeObtainMethod(location: string | undefined | null): string | nu
 
 export class SyncService {
   private supabase = getAdminClient();
+  private materialImageMap: Map<string, string> | null = null;
 
   // Map API talent type strings to our DB enum
   private normalizeTalentType(apiType: string): string {
@@ -131,6 +132,92 @@ export class SyncService {
   }
 
   /**
+   * Build a map of material name → image URL by fetching all material categories.
+   * Called once before character sync to enrich ascension_materials_data with images.
+   */
+  private async buildMaterialImageMap(): Promise<Map<string, string>> {
+    if (this.materialImageMap) return this.materialImageMap;
+
+    const map = new Map<string, string>();
+    const categories = [
+      'boss-material',
+      'character-ascension',
+      'common-ascension',
+      'local-specialties',
+      'talent-book',
+      'talent-boss',
+    ];
+
+    for (const category of categories) {
+      try {
+        const res = await fetch(`${GENSHIN_API_BASE}/materials/${category}`);
+        if (!res.ok) continue;
+        const data = await res.json() as Record<string, unknown>;
+
+        // Different categories have different structures
+        if (category === 'local-specialties') {
+          // { mondstadt: [{ id, name, ... }], liyue: [...], ... }
+          for (const [, regionMats] of Object.entries(data)) {
+            if (!Array.isArray(regionMats)) continue;
+            for (const mat of regionMats) {
+              if (mat.id && mat.name) {
+                map.set(mat.name, `${GENSHIN_API_BASE}/materials/${category}/${mat.id}`);
+              }
+            }
+          }
+        } else if (category === 'character-ascension') {
+          // { anemo: { sliver: { id, name }, fragment: {...} }, ... }
+          for (const [, elementGems] of Object.entries(data)) {
+            if (typeof elementGems !== 'object' || elementGems === null) continue;
+            for (const [, gem] of Object.entries(elementGems as Record<string, unknown>)) {
+              const g = gem as Record<string, unknown>;
+              if (g.id && g.name) {
+                map.set(g.name as string, `${GENSHIN_API_BASE}/materials/${category}/${g.id}`);
+              }
+            }
+          }
+        } else if (category === 'boss-material') {
+          // { hurricane-seed: { name, source, ... }, ... }
+          for (const [id, matObj] of Object.entries(data)) {
+            const m = matObj as Record<string, unknown>;
+            if (m.name && id !== 'id') {
+              map.set(m.name as string, `${GENSHIN_API_BASE}/materials/${category}/${id}`);
+            }
+          }
+        } else if (category === 'talent-boss') {
+          // { azhdaha: { name, ... }, ... }
+          for (const [id, matObj] of Object.entries(data)) {
+            const m = matObj as Record<string, unknown>;
+            if (m.name && id !== 'id') {
+              map.set(m.name as string, `${GENSHIN_API_BASE}/materials/${category}/${id}`);
+            }
+          }
+        } else {
+          // common-ascension, talent-book: { groupKey: { items: [{ id, name }] } }
+          for (const [, group] of Object.entries(data)) {
+            if (typeof group !== 'object' || group === null) continue;
+            const g = group as Record<string, unknown>;
+            const items = g.items as Array<Record<string, unknown>> | undefined;
+            if (items && Array.isArray(items)) {
+              for (const item of items) {
+                if (item.id && item.name) {
+                  map.set(item.name as string, `${GENSHIN_API_BASE}/materials/${category}/${item.id}`);
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // Silently skip failed categories
+      }
+    }
+
+    this.materialImageMap = map;
+    console.log(`Built material image map: ${map.size} materials`);
+    return map;
+  }
+
+  /**
    * Sync all characters from Genshin.dev API (with talents, constellations, ascension data)
    */
   async syncCharacters(): Promise<{ synced: number; errors: string[] }> {
@@ -138,9 +225,12 @@ export class SyncService {
     let synced = 0;
 
     try {
+      // Build material image lookup before syncing characters
+      const matImageMap = await this.buildMaterialImageMap();
+
       // Get character list
       const listRes = await fetch(`${GENSHIN_API_BASE}/characters`);
-      const characterNames: string[] = await listRes.json();
+      const characterNames: string[] = await listRes.json() as string[];
 
       for (const name of characterNames) {
         try {
@@ -150,7 +240,7 @@ export class SyncService {
             continue;
           }
 
-          const data = await res.json();
+          const data: any = await res.json();
           const slug = slugify(name);
 
           // Parse ascension data for base stats
@@ -192,12 +282,21 @@ export class SyncService {
           if (ascensionData) {
             characterData.ascension_data = ascensionData;
           }
-          // Collect all ascension material levels (level_20, level_40, etc.)
+          // Collect all ascension material levels (level_20, level_40, etc.) with image URLs
           if (data.ascension_materials) {
             const materialsOnly: Record<string, unknown> = {};
             for (const [key, val] of Object.entries(data.ascension_materials)) {
               if (key !== 'ascension_data') {
-                materialsOnly[key] = val;
+                // Enrich each material entry with image_url
+                if (Array.isArray(val)) {
+                  const enriched = (val as Array<{ name: string; value: number }>).map((mat) => ({
+                    ...mat,
+                    image_url: matImageMap.get(mat.name) || null,
+                  }));
+                  materialsOnly[key] = enriched;
+                } else {
+                  materialsOnly[key] = val;
+                }
               }
             }
             if (Object.keys(materialsOnly).length > 0) {
@@ -333,7 +432,7 @@ export class SyncService {
 
     try {
       const listRes = await fetch(`${GENSHIN_API_BASE}/weapons`);
-      const weaponNames: string[] = await listRes.json();
+      const weaponNames: string[] = await listRes.json() as string[];
 
       for (const name of weaponNames) {
         try {
@@ -343,7 +442,7 @@ export class SyncService {
             continue;
           }
 
-          const data = await res.json();
+          const data: any = await res.json();
           const slug = slugify(name);
 
           const obtainMethod = normalizeObtainMethod(data.location);
@@ -396,7 +495,7 @@ export class SyncService {
 
     try {
       const listRes = await fetch(`${GENSHIN_API_BASE}/artifacts`);
-      const artifactNames: string[] = await listRes.json();
+      const artifactNames: string[] = await listRes.json() as string[];
 
       for (const name of artifactNames) {
         try {
@@ -406,8 +505,22 @@ export class SyncService {
             continue;
           }
 
-          const data = await res.json();
+          const data: any = await res.json();
           const slug = slugify(name);
+
+          // Determine icon: prefer flower-of-life, fallback to first available piece
+          let iconPiece = 'flower-of-life';
+          try {
+            const piecesRes = await fetch(`${GENSHIN_API_BASE}/artifacts/${name}/list`);
+            if (piecesRes.ok) {
+              const pieces: string[] = await piecesRes.json() as string[];
+              if (pieces.length > 0 && !pieces.includes('flower-of-life')) {
+                iconPiece = pieces[0];
+              }
+            }
+          } catch {
+            // Use default flower-of-life
+          }
 
           const artifactData = {
             slug,
@@ -416,6 +529,7 @@ export class SyncService {
             max_rarity: data.max_rarity || 5,
             bonus_2pc_en: data['2-piece_bonus'] || null,
             bonus_4pc_en: data['4-piece_bonus'] || null,
+            icon_url: `${GENSHIN_API_BASE}/artifacts/${name}/${iconPiece}`,
           };
 
           const { error } = await this.supabase

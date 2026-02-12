@@ -44,6 +44,7 @@ export function WeaponCard({ weapon, className }: WeaponCardProps) {
               height={96}
               className="object-contain group-hover:scale-110 transition-transform duration-300"
               loading="lazy"
+              unoptimized
             />
           ) : (
             <div className="w-20 h-20 rounded-lg bg-gray-700/50 flex items-center justify-center">

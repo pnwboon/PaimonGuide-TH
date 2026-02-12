@@ -72,6 +72,7 @@ export interface AscensionPhaseData {
 export interface AscensionMaterialEntry {
   name: string;
   value: number;
+  image_url?: string;
 }
 
 export interface TalentUpgrade {

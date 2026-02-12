@@ -21,6 +21,7 @@ export const siteConfig = {
     { title: 'อาวุธ', href: '/weapons' },
     { title: 'Artifacts', href: '/artifacts' },
     { title: 'Build แนะนำ', href: '/builds' },
+    { title: 'ค้นหา UID', href: '/uid' },
   ],
 
   // Social Links

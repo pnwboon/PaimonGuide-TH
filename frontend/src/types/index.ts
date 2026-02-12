@@ -8,6 +8,7 @@ export type {
   TalentType,
   Character,
   Talent,
+  TalentUpgrade,
   Constellation,
   CharacterWithDetails,
   AscensionMaterial,

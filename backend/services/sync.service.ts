@@ -176,9 +176,16 @@ export class SyncService {
             birthday: data.birthday || null,
             affiliation: data.affiliation || null,
             constellation_name: data.constellation || null,
+            // Character images
             icon_url: `${GENSHIN_API_BASE}/characters/${name}/icon`,
+            icon_big_url: `${GENSHIN_API_BASE}/characters/${name}/icon-big`,
+            icon_side_url: `${GENSHIN_API_BASE}/characters/${name}/icon-side`,
             card_url: `${GENSHIN_API_BASE}/characters/${name}/card`,
             avatar_url: `${GENSHIN_API_BASE}/characters/${name}/portrait`,
+            gacha_card_url: `${GENSHIN_API_BASE}/characters/${name}/gacha-card`,
+            gacha_splash_url: `${GENSHIN_API_BASE}/characters/${name}/gacha-splash`,
+            namecard_url: `${GENSHIN_API_BASE}/characters/${name}/namecard-background`,
+            constellation_shape_url: `${GENSHIN_API_BASE}/characters/${name}/constellation-shape`,
           };
 
           // Store ascension data & materials as JSONB
@@ -216,17 +223,29 @@ export class SyncService {
           // Delete existing talents for this character (clean sync)
           await this.supabase.from('talents').delete().eq('character_id', characterId);
 
-          // Skill talents (normal attack, elemental skill, elemental burst)
+          // Map talent type to image name
+          const talentImageMap: Record<string, string> = {
+            normal_attack: 'talent-na',
+            elemental_skill: 'talent-skill',
+            elemental_burst: 'talent-burst',
+            alternate_sprint: 'talent-passive-misc',
+          };
+
+          // Skill talents (normal attack, elemental skill, elemental burst, alternate sprint)
           if (data.skillTalents && Array.isArray(data.skillTalents)) {
             for (const talent of data.skillTalents) {
+              const talentType = this.normalizeTalentType(talent.type || '');
+              const imageName = talentImageMap[talentType] || 'talent-na';
+
               const talentData = {
                 character_id: characterId,
-                type: this.normalizeTalentType(talent.type || ''),
+                type: talentType,
                 name_en: talent.name || '',
-                name_th: talent.name || '', // Will need manual Thai translation
+                name_th: talent.name || '',
                 description_en: talent.description || null,
                 description_th: null,
                 scaling: talent.upgrades || null,
+                icon_url: `${GENSHIN_API_BASE}/characters/${name}/${imageName}`,
               };
 
               const { error: talentError } = await this.supabase
@@ -253,6 +272,7 @@ export class SyncService {
                 description_en: passive.description || null,
                 description_th: null,
                 scaling: null,
+                icon_url: `${GENSHIN_API_BASE}/characters/${name}/talent-passive-${i}`,
               };
 
               const { error: passiveError } = await this.supabase
@@ -268,13 +288,15 @@ export class SyncService {
           // ========== Sync Constellations ==========
           if (data.constellations && Array.isArray(data.constellations)) {
             for (const constellation of data.constellations) {
+              const level = constellation.level || 1;
               const constData = {
                 character_id: characterId,
-                level: constellation.level || 1,
+                level,
                 name_en: constellation.name || '',
                 name_th: constellation.name || '',
                 description_en: constellation.description || null,
                 description_th: null,
+                icon_url: `${GENSHIN_API_BASE}/characters/${name}/constellation-${level}`,
               };
 
               const { error: constError } = await this.supabase

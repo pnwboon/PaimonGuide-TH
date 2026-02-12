@@ -47,7 +47,20 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
 
       {/* Character Header */}
       <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-r ${getRarityGradient(character.rarity)} p-8 mb-8`}>
-        <div className="flex flex-col md:flex-row items-center gap-8">
+        {/* Gacha Splash Background */}
+        {character.gacha_splash_url && (
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <Image
+              src={character.gacha_splash_url}
+              alt=""
+              fill
+              className="object-cover object-top"
+              unoptimized
+            />
+          </div>
+        )}
+
+        <div className="relative flex flex-col md:flex-row items-center gap-8">
           {/* Character Image */}
           <div className="flex-shrink-0">
             {character.card_url || character.icon_url ? (
@@ -111,7 +124,7 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
 
         {/* Description */}
         {character.description && (
-          <div className="mt-6 pt-6 border-t border-white/10">
+          <div className="relative mt-6 pt-6 border-t border-white/10">
             <p className="text-sm text-gray-300 leading-relaxed">{character.description}</p>
           </div>
         )}
@@ -175,11 +188,25 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
             {character.constellations.map((c) => (
               <div key={c.id} className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-xl">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-8 h-8 flex items-center justify-center text-sm font-bold bg-amber-500/20 text-amber-400 rounded-full">
-                    C{c.level}
-                  </span>
+                  {c.icon_url ? (
+                    <Image
+                      src={c.icon_url}
+                      alt={c.name_en}
+                      width={40}
+                      height={40}
+                      className="rounded-full bg-gray-700/50 p-1"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="w-10 h-10 flex items-center justify-center text-sm font-bold bg-amber-500/20 text-amber-400 rounded-full">
+                      C{c.level}
+                    </span>
+                  )}
                   <div>
-                    <h3 className="text-sm font-semibold text-white">{c.name_en}</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-400">C{c.level}</span>
+                      <h3 className="text-sm font-semibold text-white">{c.name_en}</h3>
+                    </div>
                     {c.name_th !== c.name_en && (
                       <p className="text-xs text-gray-400">{c.name_th}</p>
                     )}
@@ -292,16 +319,29 @@ function TalentCard({ talent }: { talent: Talent }) {
   return (
     <div className="p-4 bg-gray-800/50 border border-gray-700/50 rounded-xl">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded">
-              {TALENT_TYPE_NAMES[talent.type] || talent.type}
-            </span>
-          </div>
-          <h3 className="text-lg font-semibold text-white">{talent.name_en}</h3>
-          {talent.name_th !== talent.name_en && (
-            <p className="text-sm text-gray-400">{talent.name_th}</p>
+        <div className="flex items-start gap-3 flex-1">
+          {/* Talent Icon */}
+          {talent.icon_url && (
+            <Image
+              src={talent.icon_url}
+              alt={talent.name_en}
+              width={44}
+              height={44}
+              className="rounded-lg bg-gray-700/50 p-1 flex-shrink-0 mt-0.5"
+              unoptimized
+            />
           )}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded">
+                {TALENT_TYPE_NAMES[talent.type] || talent.type}
+              </span>
+            </div>
+            <h3 className="text-lg font-semibold text-white">{talent.name_en}</h3>
+            {talent.name_th !== talent.name_en && (
+              <p className="text-sm text-gray-400">{talent.name_th}</p>
+            )}
+          </div>
         </div>
         {(talent.description_en || (upgrades && upgrades.length > 0)) && (
           <button

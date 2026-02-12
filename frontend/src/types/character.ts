@@ -46,6 +46,12 @@ export interface Character {
   icon_url?: string;
   card_url?: string;
   avatar_url?: string;
+  gacha_card_url?: string;
+  gacha_splash_url?: string;
+  icon_big_url?: string;
+  icon_side_url?: string;
+  namecard_url?: string;
+  constellation_shape_url?: string;
 
   release_date?: string;
   description?: string;
@@ -82,6 +88,7 @@ export interface Talent {
   description_en?: string;
   description_th?: string;
   scaling?: TalentUpgrade[] | null;
+  icon_url?: string;
 }
 
 export interface Constellation {

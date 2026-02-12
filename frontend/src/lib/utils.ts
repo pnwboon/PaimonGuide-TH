@@ -77,6 +77,12 @@ export function getStars(rarity: number): string {
   return '★'.repeat(rarity);
 }
 
+const THAI_MONTHS = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
+  'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
+  'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+];
+
 /**
  * Format date เป็นภาษาไทย
  */
@@ -87,6 +93,50 @@ export function formatDateTh(dateString: string): string {
     month: 'long',
     day: 'numeric',
   });
+}
+
+/**
+ * Format birthday "0000-MM-DD" → "15 กรกฎาคม"
+ * ตัวละครในเกมไม่มีปีเกิด จึงแสดงแค่วันและเดือน
+ */
+export function formatBirthdayTh(birthday: string): string {
+  // strip the "0000-" or any year prefix
+  const parts = birthday.replace(/^\d{4}-/, '').split('-');
+  const month = parseInt(parts[0], 10);
+  const day = parseInt(parts[1], 10);
+  if (!month || !day) return birthday;
+  return `${day} ${THAI_MONTHS[month - 1]}`;
+}
+
+/**
+ * Format release date "2021-03-02" → "2 มีนาคม 2021 (4 ปี 11 เดือนที่แล้ว)"
+ */
+export function formatReleaseDateTh(releaseDate: string): string {
+  const parts = releaseDate.split('-');
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const day = parseInt(parts[2], 10);
+  if (!year || !month || !day) return releaseDate;
+
+  const formatted = `${day} ${THAI_MONTHS[month - 1]} ${year}`;
+
+  // Calculate relative time
+  const release = new Date(year, month - 1, day);
+  const now = new Date();
+  let diffYears = now.getFullYear() - release.getFullYear();
+  let diffMonths = now.getMonth() - release.getMonth();
+  if (now.getDate() < release.getDate()) diffMonths--;
+  if (diffMonths < 0) {
+    diffYears--;
+    diffMonths += 12;
+  }
+
+  const parts2: string[] = [];
+  if (diffYears > 0) parts2.push(`${diffYears} ปี`);
+  if (diffMonths > 0) parts2.push(`${diffMonths} เดือน`);
+  const relative = parts2.length > 0 ? parts2.join(' ') + 'ที่แล้ว' : 'เพิ่งเปิดตัว';
+
+  return `${formatted} (${relative})`;
 }
 
 /**

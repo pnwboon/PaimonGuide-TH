@@ -264,6 +264,7 @@ export class SyncService {
             title: data.title || null,
             gender: data.gender || null,
             birthday: data.birthday || null,
+            release_date: data.release || null,
             affiliation: data.affiliation || null,
             constellation_name: data.constellation || null,
             // Character images

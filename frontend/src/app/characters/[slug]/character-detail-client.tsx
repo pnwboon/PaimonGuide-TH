@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { ArrowLeft, Swords, Star, Sparkles, Info } from 'lucide-react';
 import { RarityStars } from '@/components/common/rarity-stars';
 import { ElementBadge } from '@/components/common/element-badge';
-import { getWeaponTypeNameTh, getRarityGradient, cn } from '@/lib/utils';
+import { getWeaponTypeNameTh, getRarityGradient, cn, formatBirthdayTh, formatReleaseDateTh } from '@/lib/utils';
 import { TALENT_TYPE_NAMES, STAT_NAMES_TH, REGION_NAMES_TH } from '@/config/constants';
 import type { CharacterWithDetails, Talent, TalentUpgrade } from '@/types';
 
@@ -107,10 +107,10 @@ export function CharacterDetailClient({ character }: CharacterDetailClientProps)
                 <StatBadge label="กลุ่มดาว" value={character.constellation_name} />
               )}
               {character.birthday && (
-                <StatBadge label="วันเกิด" value={character.birthday} />
+                <StatBadge label="วันเกิด" value={formatBirthdayTh(character.birthday)} />
               )}
               {character.release_date && (
-                <StatBadge label="วันเปิดตัว" value={character.release_date} />
+                <StatBadge label="วันเปิดตัว" value={formatReleaseDateTh(character.release_date)} />
               )}
             </div>
 

@@ -1,0 +1,56 @@
+# ============================================
+# PaimonGuide TH - Git Ignore
+# ============================================
+
+# ======== Dependencies ========
+node_modules/
+.pnp/
+.pnp.js
+
+# ======== Build Output ========
+.next/
+out/
+dist/
+build/
+
+# ======== Environment Variables (อันตราย!) ========
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# หมายเหตุ: .env.example เผยแพร่ได้ (ไม่มี secrets)
+
+# ======== IDE & Editor ========
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ======== OS Files ========
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ======== Debug & Logs ========
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# ======== TypeScript ========
+*.tsbuildinfo
+next-env.d.ts
+
+# ======== Testing ========
+coverage/
+.nyc_output/
+
+# ======== Supabase ========
+supabase/.temp/
+
+# ======== Misc ========
+*.pem
+.vercel

@@ -1,0 +1,19 @@
+{
+  "name": "paimonguide-th-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PaimonGuide TH Backend - Database migrations, services, and scripts",
+  "scripts": {
+    "seed": "tsx scripts/seed-data.ts",
+    "sync": "tsx scripts/sync-genshin-dev.ts",
+    "migrate": "echo 'Run migrations via Supabase Dashboard or CLI: supabase db push'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

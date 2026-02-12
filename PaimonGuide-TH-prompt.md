@@ -1,8 +1,8 @@
-# Prompt: สร้างเว็บ Paimon Guide TH ภาษาไทย
+# Prompt: สร้างเว็บ PaimonGuide TH ภาษาไทย
 
 ## ภาพรวมโปรเจค
 
-สร้างเว็บไซต์ Paimon Guide TH ภาษาไทย (Unofficial Fan Wiki) ที่มีข้อมูลครบถ้วนเกี่ยวกับตัวละคร, อาวุธ, artifacts, และคู่มือต่างๆ โดยใช้ Next.js (App Router), TypeScript, Tailwind CSS, และ Supabase
+สร้างเว็บไซต์ PaimonGuide TH ภาษาไทย (Unofficial Fan Wiki) ที่มีข้อมูลครบถ้วนเกี่ยวกับตัวละคร, อาวุธ, artifacts, และคู่มือต่างๆ โดยใช้ Next.js (App Router), TypeScript, Tailwind CSS, และ Supabase
 
 ---
 
@@ -19,6 +19,7 @@
 - **Icons:** Lucide React
 
 ### Backend
+- **Framework:** Node.js
 - **Database:** Supabase (PostgreSQL)
 - **Authentication:** Supabase Auth
 - **Storage:** Supabase Storage (สำหรับรูปภาพ)
@@ -30,178 +31,6 @@
 - **Linting:** ESLint + Prettier
 - **Git Hooks:** Husky + lint-staged
 - **Deployment:** Vercel
-
----
-
-## โครงสร้างโฟลเดอร์ (Professional Structure)
-
-```
-genshin-wiki-th/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── .husky/
-│   ├── pre-commit
-│   └── pre-push
-├── public/
-│   ├── images/
-│   │   ├── characters/
-│   │   ├── weapons/
-│   │   ├── artifacts/
-│   │   └── elements/
-│   ├── icons/
-│   └── favicon.ico
-├── src/
-│   ├── app/                          # Next.js 14 App Router
-│   │   ├── (root)/                   # Root layout group
-│   │   │   ├── page.tsx              # Homepage
-│   │   │   ├── layout.tsx            # Root layout
-│   │   │   └── loading.tsx           # Loading state
-│   │   ├── characters/
-│   │   │   ├── page.tsx              # Characters list
-│   │   │   ├── [slug]/
-│   │   │   │   ├── page.tsx          # Character detail
-│   │   │   │   └── loading.tsx
-│   │   │   └── layout.tsx
-│   │   ├── weapons/
-│   │   │   ├── page.tsx
-│   │   │   ├── [slug]/
-│   │   │   │   └── page.tsx
-│   │   │   └── layout.tsx
-│   │   ├── artifacts/
-│   │   │   ├── page.tsx
-│   │   │   └── [slug]/
-│   │   │       └── page.tsx
-│   │   ├── guides/
-│   │   │   ├── page.tsx
-│   │   │   └── [category]/
-│   │   │       └── [slug]/
-│   │   │           └── page.tsx
-│   │   ├── tier-list/
-│   │   │   └── page.tsx
-│   │   ├── tools/
-│   │   │   ├── damage-calculator/
-│   │   │   │   └── page.tsx
-│   │   │   └── wish-tracker/
-│   │   │       └── page.tsx
-│   │   ├── api/                      # API Routes
-│   │   │   ├── characters/
-│   │   │   │   ├── route.ts
-│   │   │   │   └── [id]/
-│   │   │   │       └── route.ts
-│   │   │   ├── weapons/
-│   │   │   │   └── route.ts
-│   │   │   ├── search/
-│   │   │   │   └── route.ts
-│   │   │   └── sync/
-│   │   │       └── genshin-dev/
-│   │   │           └── route.ts      # API sync script
-│   │   ├── globals.css
-│   │   └── not-found.tsx
-│   ├── components/                    # React Components
-│   │   ├── ui/                       # shadcn/ui components
-│   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── input.tsx
-│   │   │   ├── select.tsx
-│   │   │   ├── tabs.tsx
-│   │   │   ├── dialog.tsx
-│   │   │   └── ...
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   └── MobileNav.tsx
-│   │   ├── character/
-│   │   │   ├── CharacterCard.tsx
-│   │   │   ├── CharacterDetail.tsx
-│   │   │   ├── TalentSection.tsx
-│   │   │   ├── ConstellationSection.tsx
-│   │   │   ├── BuildRecommendation.tsx
-│   │   │   └── TeamComposition.tsx
-│   │   ├── weapon/
-│   │   │   ├── WeaponCard.tsx
-│   │   │   ├── WeaponDetail.tsx
-│   │   │   └── WeaponComparison.tsx
-│   │   ├── artifact/
-│   │   │   ├── ArtifactCard.tsx
-│   │   │   └── ArtifactSetBonus.tsx
-│   │   ├── search/
-│   │   │   ├── SearchBar.tsx
-│   │   │   └── SearchResults.tsx
-│   │   ├── filters/
-│   │   │   ├── ElementFilter.tsx
-│   │   │   ├── RarityFilter.tsx
-│   │   │   └── WeaponTypeFilter.tsx
-│   │   └── common/
-│   │       ├── ElementIcon.tsx
-│   │       ├── RarityStars.tsx
-│   │       ├── StatDisplay.tsx
-│   │       └── LoadingSpinner.tsx
-│   ├── lib/                          # Utility functions & configs
-│   │   ├── supabase/
-│   │   │   ├── client.ts             # Supabase client
-│   │   │   ├── server.ts             # Server-side Supabase
-│   │   │   └── middleware.ts
-│   │   ├── api/
-│   │   │   ├── genshin-dev.ts        # Genshin.dev API client
-│   │   │   ├── enka.ts               # Enka Network API
-│   │   │   └── ambr.ts               # Ambr.top API
-│   │   ├── utils/
-│   │   │   ├── cn.ts                 # Tailwind class merger
-│   │   │   ├── format.ts             # Formatting utilities
-│   │   │   └── validators.ts         # Validation functions
-│   │   └── constants/
-│   │       ├── elements.ts
-│   │       ├── weapon-types.ts
-│   │       └── rarities.ts
-│   ├── types/                        # TypeScript types
-│   │   ├── character.ts
-│   │   ├── weapon.ts
-│   │   ├── artifact.ts
-│   │   ├── material.ts
-│   │   ├── talent.ts
-│   │   ├── database.ts               # Supabase generated types
-│   │   └── api.ts
-│   ├── hooks/                        # Custom React hooks
-│   │   ├── useCharacters.ts
-│   │   ├── useWeapons.ts
-│   │   ├── useArtifacts.ts
-│   │   ├── useSearch.ts
-│   │   └── useLocalStorage.ts
-│   ├── store/                        # Zustand stores
-│   │   ├── filterStore.ts
-│   │   ├── searchStore.ts
-│   │   └── userPreferencesStore.ts
-│   ├── services/                     # Business logic layer
-│   │   ├── character.service.ts
-│   │   ├── weapon.service.ts
-│   │   ├── artifact.service.ts
-│   │   └── sync.service.ts           # Data sync service
-│   └── middleware.ts                 # Next.js middleware
-├── supabase/                         # Supabase configuration
-│   ├── migrations/
-│   │   ├── 00001_initial_schema.sql
-│   │   ├── 00002_characters.sql
-│   │   ├── 00003_weapons.sql
-│   │   ├── 00004_artifacts.sql
-│   │   └── 00005_materials.sql
-│   ├── functions/                    # Edge functions
-│   └── seed.sql                      # Seed data
-├── scripts/                          # Utility scripts
-│   ├── sync-genshin-dev.ts          # Sync data from Genshin.dev
-│   ├── generate-types.ts            # Generate Supabase types
-│   └── seed-database.ts             # Seed initial data
-├── .env.local                        # Environment variables
-├── .env.example
-├── .eslintrc.json
-├── .prettierrc
-├── next.config.js
-├── tailwind.config.ts
-├── tsconfig.json
-├── package.json
-└── README.md
-```
 
 ---
 
@@ -643,7 +472,7 @@ NEXT_PUBLIC_SITE_NAME=Genshin Wiki TH
 
 ```bash
 # 1. Create Next.js project
-npx create-next-app@latest genshin-wiki-th --typescript --tailwind --app --use-pnpm
+npx create-next-app@latest PaimonGuide-TH --typescript --tailwind --app --use-pnpm
 
 # 2. Install dependencies
 pnpm add @supabase/supabase-js @supabase/auth-helpers-nextjs
@@ -838,7 +667,7 @@ Genshin Impact™ เป็นเครื่องหมายการค้�
 
 ## Summary
 
-นี่คือ prompt ที่ครบถ้วนสำหรับการสร้างเว็บ Genshin Wiki TH โดยมี:
+นี่คือ prompt ที่ครบถ้วนสำหรับการสร้างเว็บ PaimonGuide TH โดยมี:
 ✅ โครงสร้างโฟลเดอร์แบบมืออาชีพ แยก Frontend/Backend ชัดเจน
 ✅ Database schema ครบถ้วน
 ✅ TypeScript types สำหรับทุก entity

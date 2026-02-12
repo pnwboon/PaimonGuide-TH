@@ -508,18 +508,29 @@ export class SyncService {
           const data: any = await res.json();
           const slug = slugify(name);
 
-          // Determine icon: prefer flower-of-life, fallback to first available piece
+          // Determine icon & available pieces
           let iconPiece = 'flower-of-life';
+          let availablePieces: string[] = ['flower', 'plume', 'sands', 'goblet', 'circlet'];
+          const apiToPiece: Record<string, string> = {
+            'flower-of-life': 'flower',
+            'plume-of-death': 'plume',
+            'sands-of-eon': 'sands',
+            'goblet-of-eonothem': 'goblet',
+            'circlet-of-logos': 'circlet',
+          };
           try {
             const piecesRes = await fetch(`${GENSHIN_API_BASE}/artifacts/${name}/list`);
             if (piecesRes.ok) {
-              const pieces: string[] = await piecesRes.json() as string[];
-              if (pieces.length > 0 && !pieces.includes('flower-of-life')) {
-                iconPiece = pieces[0];
+              const rawPieces: string[] = await piecesRes.json() as string[];
+              if (rawPieces.length > 0) {
+                availablePieces = rawPieces.map(p => apiToPiece[p] || p).filter(Boolean);
+                if (!rawPieces.includes('flower-of-life')) {
+                  iconPiece = rawPieces[0];
+                }
               }
             }
           } catch {
-            // Use default flower-of-life
+            // Use defaults
           }
 
           const artifactData = {
@@ -530,6 +541,7 @@ export class SyncService {
             bonus_2pc_en: data['2-piece_bonus'] || null,
             bonus_4pc_en: data['4-piece_bonus'] || null,
             icon_url: `${GENSHIN_API_BASE}/artifacts/${name}/${iconPiece}`,
+            pieces: availablePieces,
           };
 
           const { error } = await this.supabase

@@ -53,9 +53,9 @@ export function ArtifactCard({ artifact, className }: ArtifactCardProps) {
           <span className="text-xs text-gray-400">{artifact.name_en}</span>
           <RarityStars rarity={artifact.max_rarity} size="sm" />
         </div>
-        {artifact.bonus_2pc_th && (
+        {(artifact.bonus_2pc_th || artifact.bonus_2pc_en) && (
           <p className="text-xs text-gray-500 mt-1 line-clamp-1">
-            2 ชิ้น: {artifact.bonus_2pc_th}
+            2pc: {artifact.bonus_2pc_th || artifact.bonus_2pc_en}
           </p>
         )}
       </div>

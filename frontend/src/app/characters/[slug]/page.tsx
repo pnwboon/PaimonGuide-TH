@@ -25,23 +25,33 @@ async function getCharacter(slug: string): Promise<CharacterWithDetails | null> 
   if (error || !character) return null;
 
   // Fetch related data in parallel
-  const [talentsRes, constellationsRes] = await Promise.all([
+  const [talentsRes, constellationsRes, storiesRes, voiceLinesRes, videosRes] = await Promise.all([
+    supabase.from('talents').select('*').eq('character_id', character.id).order('type'),
+    supabase.from('constellations').select('*').eq('character_id', character.id).order('level'),
     supabase
-      .from('talents')
+      .from('character_stories')
       .select('*')
       .eq('character_id', character.id)
-      .order('type'),
+      .order('sort_order'),
     supabase
-      .from('constellations')
+      .from('character_voice_lines')
       .select('*')
       .eq('character_id', character.id)
-      .order('level'),
+      .order('sort_order'),
+    supabase
+      .from('character_videos')
+      .select('*')
+      .eq('character_id', character.id)
+      .order('sort_order'),
   ]);
 
   return {
     ...character,
     talents: talentsRes.data || [],
     constellations: constellationsRes.data || [],
+    stories: storiesRes.data || [],
+    voice_lines: voiceLinesRes.data || [],
+    videos: videosRes.data || [],
   } as CharacterWithDetails;
 }
 

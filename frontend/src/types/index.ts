@@ -9,29 +9,21 @@ export type {
   Character,
   Talent,
   TalentUpgrade,
+  TalentScalingData,
   Constellation,
   CharacterWithDetails,
   AscensionMaterial,
   TalentMaterial,
+  CharacterStory,
+  CharacterVoiceLine,
+  CharacterVideo,
 } from './character';
 
-export type {
-  Weapon,
-  ObtainMethod,
-  RefinementData,
-} from './weapon';
+export type { Weapon, ObtainMethod, RefinementData } from './weapon';
 
-export type {
-  Artifact,
-  ArtifactPiece,
-  ArtifactMainStat,
-} from './artifact';
+export type { Artifact, ArtifactPiece, ArtifactMainStat } from './artifact';
 
-export type {
-  Material,
-  MaterialType,
-  DayOfWeek,
-} from './material';
+export type { Material, MaterialType, DayOfWeek } from './material';
 
 export type {
   CharacterBuild,
@@ -41,9 +33,4 @@ export type {
   TeamComposition,
 } from './build';
 
-export type {
-  ApiResponse,
-  PaginatedResponse,
-  FilterParams,
-  SearchResult,
-} from './api';
+export type { ApiResponse, PaginatedResponse, FilterParams, SearchResult } from './api';

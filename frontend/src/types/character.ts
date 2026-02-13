@@ -33,6 +33,19 @@ export interface Character {
   affiliation?: string;
   constellation_name?: string;
 
+  // Voice actors
+  cv_cn?: string;
+  cv_en?: string;
+  cv_jp?: string;
+  cv_kr?: string;
+
+  // Version & extras
+  version?: string;
+  special_dish_name?: string;
+  special_dish_description?: string;
+  special_dish_image_url?: string;
+  tcg_card_image_url?: string;
+
   base_hp: number;
   base_atk: number;
   base_def: number;
@@ -42,6 +55,9 @@ export interface Character {
   // Ascension data (JSONB)
   ascension_data?: AscensionPhaseData[];
   ascension_materials_data?: Record<string, AscensionMaterialEntry[]>;
+
+  // Talent materials (JSONB)
+  talent_materials_data?: Record<string, AscensionMaterialEntry[]>;
 
   icon_url?: string;
   card_url?: string;
@@ -89,7 +105,14 @@ export interface Talent {
   description_en?: string;
   description_th?: string;
   scaling?: TalentUpgrade[] | null;
+  scaling_data?: TalentScalingData | null;
   icon_url?: string;
+}
+
+/** Multi-level talent scaling data (Lv.1-15) */
+export interface TalentScalingData {
+  params: string[]; // ชื่อ param เช่น ["1-Hit DMG", "2-Hit DMG", ...]
+  levels: Record<string, string[]>; // { "1": ["48.4%", ...], "2": [...], ... }
 }
 
 export interface Constellation {
@@ -108,6 +131,37 @@ export interface CharacterWithDetails extends Character {
   constellations: Constellation[];
   ascension_materials?: AscensionMaterial[];
   talent_materials?: TalentMaterial[];
+  stories?: CharacterStory[];
+  voice_lines?: CharacterVoiceLine[];
+  videos?: CharacterVideo[];
+}
+
+export interface CharacterStory {
+  id: string;
+  character_id: string;
+  title: string;
+  content: string;
+  unlock_condition?: string;
+  sort_order: number;
+}
+
+export interface CharacterVoiceLine {
+  id: string;
+  character_id: string;
+  title: string;
+  content: string;
+  unlock_condition?: string;
+  sort_order: number;
+}
+
+export interface CharacterVideo {
+  id: string;
+  character_id: string;
+  title: string;
+  youtube_url: string;
+  video_type?: string;
+  thumbnail_url?: string;
+  sort_order: number;
 }
 
 export interface AscensionMaterial {
